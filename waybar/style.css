@@ -1,0 +1,175 @@
+/* ═════════════════════════════════════════════════════════════
+   Waybar: pure-black OLED bar, monochrome, macOS-dark feel
+   One file, one palette. Edit the colours below to tweak.
+   Reload: pkill -SIGUSR2 waybar
+   ═════════════════════════════════════════════════════════════ */
+
+@define-color black    #000000;   /* bar background (true OLED black) */
+@define-color gray900  #1c1c1e;   /* hover, tooltip */
+@define-color gray800  #2c2c2e;   /* active workspace */
+@define-color gray700  #3a3a3c;   /* dividers, borders */
+@define-color gray500  #636366;   /* inactive / muted */
+@define-color gray300  #aeaeb2;   /* secondary text */
+@define-color white    #f5f5f7;   /* primary text */
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "SF Pro Display", "SF Pro Text", "Inter", "Symbols Nerd Font Mono", "JetBrainsMono Nerd Font", sans-serif;
+    font-weight: 600;
+    font-feature-settings: "tnum";
+    font-size: 13px;
+    min-height: 0;
+}
+
+/* One solid, fully opaque black bar */
+window#waybar {
+    background: @black;
+    border-bottom: 0px solid @gray900;
+    color: @white;
+}
+
+tooltip {
+    background: @gray900;
+    border: 1px solid @gray700;
+    border-radius: 8px;
+}
+
+tooltip label {
+    color: @white;
+    padding: 2px 6px;
+}
+
+/* ───────── Modules: no individual backgrounds ───────── */
+
+#workspaces,
+#window,
+#clock,
+#backlight,
+#battery,
+#network,
+#pulseaudio,
+#pulseaudio.microphone,
+#custom-cpu_temp,
+#tray {
+    background: transparent;
+    color: @gray300;
+    padding: 0px 12px;
+    margin: 3px 0px;
+    border-radius: 8px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* macOS menu-bar style hover highlight */
+#clock:hover,
+#backlight:hover,
+#battery:hover,
+#network:hover,
+#pulseaudio:hover,
+#pulseaudio.microphone:hover,
+#custom-cpu_temp:hover,
+#tray:hover {
+    background: @gray900;
+    color: @white;
+}
+
+/* Thin dividers between right-side sections */
+#clock,
+#backlight,
+#battery,
+#network,
+#pulseaudio,
+#pulseaudio.microphone,
+#custom-cpu_temp {
+    border-left: 1px solid @gray900;
+    border-radius: 0;
+}
+
+#clock:hover,
+#backlight:hover,
+#battery:hover,
+#network:hover,
+#pulseaudio:hover,
+#pulseaudio.microphone:hover,
+#custom-cpu_temp:hover {
+    border-radius: 8px;
+}
+
+/* ───────── Left: workspaces ───────── */
+
+/* Time is the first module on the bar (no divider before it) */
+#clock.time {
+    margin-left: 6px;
+    border-left: none;
+}
+
+/* Divider between the date and the workspaces */
+#workspaces {
+    margin-left: 0px;
+    padding: 0px 2px;
+    border-left: 1px solid @gray900;
+    border-radius: 0;
+}
+
+#workspaces button {
+    padding: 0px 8px;
+    margin: 2px 2px;
+    color: @gray500;
+    background: transparent;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+#workspaces button:hover {
+    background: @gray900;
+    color: @white;
+}
+
+#workspaces button.active,
+#workspaces button.focused {
+    background: @gray800;
+    color: @white;
+}
+
+/* Urgent: inverted, so it stays monochrome but impossible to miss */
+#workspaces button.urgent {
+    background: @white;
+    color: @black;
+}
+
+/* ───────── Centre: window title ───────── */
+
+#window {
+    color: @white;
+    padding: 0px 20px;
+}
+
+/* ───────── Right: status modules ───────── */
+
+#clock { color: @white; }
+
+#battery.charging,
+#battery.plugged { color: @white; }
+
+#battery.warning:not(.charging) { color: @white; }
+
+/* Critical: inverted pill */
+#battery.critical:not(.charging) {
+    background: @white;
+    color: @black;
+    border-radius: 8px;
+}
+
+#network.disconnected,
+#pulseaudio.muted,
+#pulseaudio.microphone.muted { color: @gray500; }
+
+#tray {
+    margin-right: 6px;
+    padding: 0px 10px;
+    border-left: 1px solid @gray900;
+    border-radius: 0;
+}
+
+#tray > .passive         { -gtk-icon-effect: dim; }
+#tray > .needs-attention { -gtk-icon-effect: highlight; }

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+WALLPAPER_DIR="$HOME/Wallpapers/current/"
+THUMB_DIR="$WALLPAPER_DIR/.thumbnails"
+
+mkdir -p "$THUMB_DIR"
+
+# generate thumbnail function
+generate_thumb() {
+    local img="$1"
+    local base="$(basename "$img")"
+    local thumb="$THUMB_DIR/$base"
+
+    if [ ! -f "$thumb" ]; then
+        convert "$img" -thumbnail 256x256 "$thumb"
+    fi
+
+    echo "$thumb"
+}
+
+# collect wallpapers
+mapfile -t files < <(find "$WALLPAPER_DIR" -maxdepth 1 -type f -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' | sort)
+
+entries=""
+
+for f in "${files[@]}"; do
+    name="$(basename "$f")"
+    thumb=$(generate_thumb "$f")
+    entries+="${name}\0icon\x1f${thumb}\n"
+done
+
+choice=$(printf "%b" "$entries" | rofi -dmenu -p "Wallpaper" \
+    -show-icons -theme ~/.config/rofi/wallpaper-picker.rasi)
+
+if [ -n "$choice" ]; then
+    for f in "${files[@]}"; do
+        [ "$(basename "$f")" = "$choice" ] && \
+        swww img "$f" --transition-type grow --transition-duration 1 && break
+    done
+fi

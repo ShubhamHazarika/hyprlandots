@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+WALLPAPER_DIR="$HOME/Wallpapers"
+CURRENT_DIR="${1:-$WALLPAPER_DIR}"
+THUMB_DIR="$CURRENT_DIR/.thumbnails"
+
+mkdir -p "$THUMB_DIR"
+
+generate_thumb() {
+    local img="$1"
+    local base="$(basename "$img")"
+    local thumb="$THUMB_DIR/$base"
+
+    if [ ! -f "$thumb" ]; then
+        convert "$img" -thumbnail 256x256 "$thumb"
+    fi
+
+    echo "$thumb"
+}
+
+entries=""
+
+# BACK option
+if [[ "$CURRENT_DIR" != "$WALLPAPER_DIR" ]]; then
+    entries+=".. (Back)\0icon\x1ffolder\n"
+fi
+
+# --- SHOW SUBFOLDERS BUT SKIP .thumbnails ---
+while IFS= read -r folder; do
+    name="$(basename "$folder")"
+    entries+="${name}/\0icon\x1ffolder\n"
+done < <(
+    find "$CURRENT_DIR" -mindepth 1 -maxdepth 1 -type d \
+    ! -name ".thumbnails"
+)
+
+# --- SHOW IMAGE FILES (NUMERICALLY SORTED) ---
+mapfile -t files < <(
+    find "$CURRENT_DIR" -maxdepth 1 -type f \
+        \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+    | sort -V
+)
+
+for f in "${files[@]}"; do
+    name="$(basename "$f")"
+    thumb=$(generate_thumb "$f")
+    entries+="${name}\0icon\x1f${thumb}\n"
+done
+
+# --- ROFI ---
+choice=$(printf "%b" "$entries" | rofi -dmenu -p "Wallpaper" \
+    -show-icons -theme ~/.config/rofi/wallpaper-picker.rasi)
+
+# BACK
+if [[ "$choice" == ".. (Back)" ]]; then
+    parent="$(dirname "$CURRENT_DIR")"
+    exec "$0" "$parent"
+fi
+
+# FOLDER CLICK
+if [[ "$choice" == */ ]]; then
+    folder="${choice%/}"
+    exec "$0" "$CURRENT_DIR/$folder"
+fi
+
+# IMAGE SELECTION
+if [ -n "$choice" ]; then
+    for f in "${files[@]}"; do
+        if [[ "$(basename "$f")" == "$choice" ]]; then
+            awww img "$f" \
+		    --transition-type random \
+		    --transition-duration 1 \
+		    --transition-fps 60
+            break
+        fi
+    done
+fi
